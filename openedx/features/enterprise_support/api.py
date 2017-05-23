@@ -201,6 +201,7 @@ def data_sharing_consent_required(view_func):
     After granting consent, the user will be redirected back to the original request.path.
 
     """
+
     @wraps(view_func)
     def inner(request, course_id, *args, **kwargs):
         """
