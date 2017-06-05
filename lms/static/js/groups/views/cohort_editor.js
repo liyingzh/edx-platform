@@ -24,6 +24,8 @@
                 errorNotifications: null,
                 // Any confirmation messages that are currently being displayed (for example, number of students added).
                 confirmationNotifications: null,
+                // Any messages about preassigned email addresses currently being displayed to the instructor.
+                preassignedNotifications: null,
 
                 render: function() {
                     this.$el.html(this.template({
@@ -108,7 +110,7 @@
                                 }
                             });
                         }).fail(function() {
-                            self.showErrorMessage(gettext('Error adding students.'), true);
+                            self.showErrorMessage(gettext('Error adding learners.'), true);
                         });
                     } else {
                         self.showErrorMessage(gettext('Enter a username or email.'), true);
@@ -151,20 +153,24 @@
                 },
 
                 addNotifications: function(modifiedUsers) {
-                    var oldCohort, title, details, numPresent, numUsersAdded, numErrors,
-                        createErrorDetails, errorActionCallback, errorModel,
+                    var oldCohort, title, details, numPresent, numUsersAdded, numPreassigned,
+                        numErrors, createErrorDetails, errorActionCallback, errorModel, i,
                         errorLimit = 5;
 
                     // Show confirmation messages.
                     this.undelegateViewEvents(this.confirmationNotifications);
                     numUsersAdded = modifiedUsers.added.length + modifiedUsers.changed.length;
                     numPresent = modifiedUsers.present.length;
+                    numPreassigned = modifiedUsers.preassigned.length;
+                    title = '';
                     if (numUsersAdded > 0 || numPresent > 0) {
-                        title = interpolate_text(
-                            ngettext('{numUsersAdded} student has been added to this cohort',
-                                '{numUsersAdded} students have been added to this cohort', numUsersAdded),
-                            {numUsersAdded: numUsersAdded}
-                        );
+                        if (numUsersAdded > 0 || numPresent > 0) {
+                            title += interpolate_text(
+                                ngettext('{numUsersAdded} learner has been added to this cohort. ',
+                                    '{numUsersAdded} learners have been added to this cohort. ', numUsersAdded),
+                                {numUsersAdded: numUsersAdded}
+                            );
+                        }
 
                         var movedByCohort = {};
                         _.each(modifiedUsers.changed, function(changedInfo) {
@@ -178,11 +184,12 @@
                         });
 
                         details = [];
+
                         for (oldCohort in movedByCohort) {
                             details.push(
                                 interpolate_text(
-                                    ngettext('{numMoved} student was removed from {oldCohort}',
-                                        '{numMoved} students were removed from {oldCohort}', movedByCohort[oldCohort]),
+                                    ngettext('{numMoved} learner was moved from {oldCohort}',
+                                        '{numMoved} learners were moved from {oldCohort}', movedByCohort[oldCohort]),
                                     {numMoved: movedByCohort[oldCohort], oldCohort: oldCohort}
                                 )
                             );
@@ -190,8 +197,8 @@
                         if (numPresent > 0) {
                             details.push(
                                 interpolate_text(
-                                    ngettext('{numPresent} student was already in the cohort',
-                                        '{numPresent} students were already in the cohort', numPresent),
+                                    ngettext('{numPresent} learner was already in the cohort',
+                                        '{numPresent} learners were already in the cohort', numPresent),
                                     {numPresent: numPresent}
                                 )
                             );
@@ -206,35 +213,81 @@
                             })
                         });
                         this.confirmationNotifications.render();
-                    }
-                    else if (this.confirmationNotifications) {
+                    } else if (this.confirmationNotifications) {
                         this.confirmationNotifications.$el.html('');
                         this.confirmationNotifications = null;
                     }
 
+                    // Show preassigned email addresses.
+                    this.undelegateViewEvents(this.preassignedNotifications);
+                    if (numPreassigned > 0) {
+                        details = [];
+                        for (i = 0; i < modifiedUsers.preassigned.length; i++) {
+                            details.push(interpolate_text(gettext('{email}'),
+                                {email: modifiedUsers.preassigned[i]}));
+                        }
+
+                        title = (
+                            interpolate_text(
+                                ngettext('{numPreassigned} learner was pre-assigned for this cohort. ' +
+                                    'This learner will automatically be added to the cohort when ' +
+                                    'they enroll in the course.',
+                                    '{numPreassigned} learners were pre-assigned for this cohort. ' +
+                                    'These learners will automatically be added to the cohort when ' +
+                                    'they enroll in the course.',
+                                    numPreassigned),
+                                {numPreassigned: numPreassigned}
+                            )
+                        );
+
+                        this.preassignedNotifications = new NotificationView({
+                            el: this.$('.cohort-preassigned'),
+                            model: new NotificationModel({
+                                type: 'warning',
+                                title: title,
+                                details: details
+                            })
+                        });
+                        this.preassignedNotifications.render();
+                    } else if (this.preassignedNotifications) {
+                        this.preassignedNotifications.$el.html('');
+                        this.preassignedNotifications = null;
+                    }
+
                     // Show error messages.
                     this.undelegateViewEvents(this.errorNotifications);
-                    numErrors = modifiedUsers.unknown.length;
+                    numErrors = modifiedUsers.unknown.length + modifiedUsers.invalid.length;
                     if (numErrors > 0) {
-                        createErrorDetails = function(unknownUsers, showAllErrors) {
-                            var numErrors = unknownUsers.length, details = [];
+                        createErrorDetails = function(unknownUsers, invalidEmails, showAllErrors) {
+                            var unknownErrorsShown = showAllErrors ? unknownUsers.length :
+                                Math.min(errorLimit, unknownUsers.length);
+                            var invalidErrorsShown = showAllErrors ? invalidEmails.length :
+                                Math.min(errorLimit - unknownUsers.length, invalidEmails.length);
+                            details = [];
 
-                            for (var i = 0; i < (showAllErrors ? numErrors : Math.min(errorLimit, numErrors)); i++) {
-                                details.push(interpolate_text(gettext('Unknown user: {user}'), {user: unknownUsers[i]}));
+
+                            for (i = 0; i < unknownErrorsShown; i++) {
+                                details.push(interpolate_text(gettext('Unknown username: {user}'),
+                                    {user: unknownUsers[i]}));
+                            }
+                            for (i = 0; i < invalidErrorsShown; i++) {
+                                details.push(interpolate_text(gettext('Invalid email address: {email}'),
+                                    {email: invalidEmails[i]}));
                             }
                             return details;
                         };
 
                         title = interpolate_text(
-                            ngettext('There was an error when trying to add students:',
-                                'There were {numErrors} errors when trying to add students:', numErrors),
+                            ngettext('There was an error when trying to add learners:',
+                                '{numErrors} learners could not be added to this cohort:', numErrors),
                             {numErrors: numErrors}
                         );
-                        details = createErrorDetails(modifiedUsers.unknown, false);
+                        details = createErrorDetails(modifiedUsers.unknown, modifiedUsers.invalid, false);
 
                         errorActionCallback = function(view) {
                             view.model.set('actionText', null);
-                            view.model.set('details', createErrorDetails(modifiedUsers.unknown, true));
+                            view.model.set('details',
+                                createErrorDetails(modifiedUsers.unknown, modifiedUsers.invalid, true));
                             view.render();
                         };
 

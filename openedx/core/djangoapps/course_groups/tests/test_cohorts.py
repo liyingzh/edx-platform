@@ -258,6 +258,31 @@ class TestCohorts(ModuleStoreTestCase):
             "other_user should be assigned to the default cohort"
         )
 
+    def test_get_cohort_preassigned_user(self):
+        """
+        When an email address is added to a cohort and a user signs up for the course with that email address,
+        the user should automatically be added to that cohort and not a random cohort.
+        """
+        course = modulestore().get_course(self.toy_course_key)
+        cohort = CohortFactory(course_id=course.id, name="TestCohort", users=[])
+        cohort2 = CohortFactory(course_id=course.id, name="RandomCohort", users=[])
+        config_course_cohorts(course, is_cohorted=True)
+
+        # Add email address to the cohort
+        (user, previous_cohort, prereg) = cohorts.add_user_to_cohort(cohort, "email@example.com")
+        self.assertEquals(
+            (user.email, previous_cohort, prereg),
+            ("email@example.com", None, True)
+        )
+
+        # Create user with this email address
+        user = UserFactory(username="test", email="email@example.com")
+        self.assertEquals(
+            cohorts.get_cohort(user, course.id).id,
+            cohort.id,
+            "User should be assigned to the right cohort"
+        )
+
     @ddt.data(
         (True, 2),
         (False, 6),
@@ -549,7 +574,7 @@ class TestCohorts(ModuleStoreTestCase):
         # We shouldn't get back a previous cohort, since the user wasn't in one
         self.assertEqual(
             cohorts.add_user_to_cohort(first_cohort, "Username"),
-            (course_user, None)
+            (course_user, None, False)
         )
         mock_tracker.emit.assert_any_call(
             "edx.cohort.user_add_requested",
@@ -565,7 +590,7 @@ class TestCohorts(ModuleStoreTestCase):
         # another
         self.assertEqual(
             cohorts.add_user_to_cohort(second_cohort, "Username"),
-            (course_user, "FirstCohort")
+            (course_user, "FirstCohort", False)
         )
         mock_tracker.emit.assert_any_call(
             "edx.cohort.user_add_requested",
@@ -575,6 +600,21 @@ class TestCohorts(ModuleStoreTestCase):
                 "cohort_name": second_cohort.name,
                 "previous_cohort_id": first_cohort.id,
                 "previous_cohort_name": first_cohort.name,
+            }
+        )
+        # Should preregister email address for a cohort if an email address
+        # not associated with a user is added
+        (user, previous_cohort, prereg) = cohorts.add_user_to_cohort(first_cohort, "new_email@example.com")
+        self.assertEqual(
+            (user.email, previous_cohort, prereg),
+            ("new_email@example.com", None, True)
+        )
+        mock_tracker.emit.assert_any_call(
+            "edx.cohort.email_address_preassigned",
+            {
+                "user_email": "new_email@example.com",
+                "cohort_id": first_cohort.id,
+                "cohort_name": first_cohort.name,
             }
         )
         # Error cases

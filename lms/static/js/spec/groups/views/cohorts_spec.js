@@ -249,7 +249,7 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
             };
 
             unknownUserMessage = function(name) {
-                return 'Unknown user: ' + name;
+                return 'Unknown username: ' + name;
             };
 
             beforeEach(function() {
@@ -299,7 +299,7 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                 expect(cohortsView.$(fileUploadFormCss).length).toBe(0);
                 uploadCsvToggle = cohortsView.$('.toggle-cohort-management-secondary');
                 expect(uploadCsvToggle.text()).
-                    toContain('Assign students to cohorts by uploading a CSV file');
+                    toContain('Assign learners to cohorts by uploading a CSV file');
                 uploadCsvToggle.click();
                 // After toggle is clicked, it should be hidden.
                 expect(uploadCsvToggle).toHaveClass('hidden');
@@ -690,7 +690,8 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                 respondToAdd = function(result) {
                     AjaxHelpers.respondWithJson(
                         requests,
-                        _.extend({unknown: [], added: [], present: [], changed: [], success: true}, result)
+                        _.extend({unknown: [], added: [], present: [], changed: [],
+                            success: true, preassigned: [], invalid: []}, result)
                     );
                 };
 
@@ -709,7 +710,7 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                     respondToAdd({added: ['student@sample.com']});
                     respondToRefresh(catLoversUpdatedCount, dogLoversInitialCount);
                     verifyHeader(1, 'Cat Lovers', catLoversUpdatedCount);
-                    verifyMessage('1 student has been added to this cohort', 'confirmation');
+                    verifyMessage('1 learner has been added to this cohort.', 'confirmation');
                     expect(getStudentInput().val()).toBe('');
                 });
 
@@ -722,7 +723,7 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                     respondToAdd({unknown: ['unknown@sample.com']});
                     respondToRefresh(catLoversInitialCount, dogLoversInitialCount);
                     verifyHeader(1, 'Cat Lovers', catLoversInitialCount);
-                    verifyDetailedMessage('There was an error when trying to add students:', 'error',
+                    verifyDetailedMessage('There was an error when trying to add learners:', 'error',
                         [unknownUserMessage('unknown@sample.com')]
                     );
                     expect(getStudentInput().val()).toBe('unknown@sample.com');
@@ -746,7 +747,7 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                         'unknown6@sample.com']
                     });
                     respondToRefresh(catLoversInitialCount + 6, dogLoversInitialCount);
-                    verifyDetailedMessage('There were 6 errors when trying to add students:', 'error',
+                    verifyDetailedMessage('6 learners could not be added to this cohort:', 'error',
                         [
                             unknownUserMessage('unknown1@sample.com'), unknownUserMessage('unknown2@sample.com'),
                             unknownUserMessage('unknown3@sample.com'), unknownUserMessage('unknown4@sample.com'),
@@ -757,7 +758,7 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                     expect(getStudentInput().val()).toBe(sixUsers);
                     // Click "View all"
                     cohortsView.$('.action-expand').click();
-                    verifyDetailedMessage('There were 6 errors when trying to add students:', 'error',
+                    verifyDetailedMessage('6 learners could not be added to this cohort:', 'error',
                         [
                             unknownUserMessage('unknown1@sample.com'), unknownUserMessage('unknown2@sample.com'),
                             unknownUserMessage('unknown3@sample.com'), unknownUserMessage('unknown4@sample.com'),
@@ -784,11 +785,11 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                     });
                     respondToRefresh();
 
-                    verifyDetailedMessage('3 students have been added to this cohort', 'confirmation',
+                    verifyDetailedMessage('3 learners have been added to this cohort.', 'confirmation',
                         [
-                            '2 students were removed from cohort 2',
-                            '1 student was removed from cohort 3',
-                            '1 student was already in the cohort'
+                            '2 learners were moved from cohort 2',
+                            '1 learner was moved from cohort 3',
+                            '1 learner was already in the cohort'
                         ]
                     );
                     expect(getStudentInput().val()).toBe('');
@@ -798,7 +799,7 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                     createCohortsView(this, {selectCohort: 1});
                     addStudents('student@sample.com');
                     AjaxHelpers.respondWithError(requests);
-                    verifyMessage('Error adding students.', 'error');
+                    verifyMessage('Error adding learners.', 'error');
                     expect(getStudentInput().val()).toBe('student@sample.com');
                 });
 
@@ -808,13 +809,13 @@ define(['backbone', 'jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers
                     // First verify that an error is shown
                     addStudents('student@sample.com');
                     AjaxHelpers.respondWithError(requests);
-                    verifyMessage('Error adding students.', 'error');
+                    verifyMessage('Error adding learners.', 'error');
 
                     // Now verify that the error is removed on a subsequent add
                     addStudents('student@sample.com');
                     respondToAdd({added: ['student@sample.com']});
                     respondToRefresh(catLoversInitialCount + 1, dogLoversInitialCount);
-                    verifyMessage('1 student has been added to this cohort', 'confirmation');
+                    verifyMessage('1 learner has been added to this cohort.', 'confirmation');
                 });
             });
 
