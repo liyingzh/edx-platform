@@ -219,8 +219,7 @@ class CapaFields(object):
                "or to report an issue, please contact moocsupport@mathworks.com"),
         scope=Scope.settings
     )
-    score = Integer(
-        display_name=_("Score"),
+    score = Dict(
         scope=Scope.user_state,
         help=_("The student's current raw score on the problem"),
     )
@@ -247,6 +246,9 @@ class CapaMixin(ScorableXBlockMixin, CapaFields):
         # it to the system here seems like the least clunky way to get it
         # there.
         self.runtime.set('location', self.location.to_deprecated_string())
+        # DEBUG: THIS WORKS. RUN: IT DOESN'T. RACE CONDITION?
+        if self.score:
+            self.set_score(Score(raw_earned=self.score['raw_earned'], raw_possible=self.score['raw_possible']))
 
         try:
             # TODO (vshnayder): move as much as possible of this work and error
@@ -296,8 +298,6 @@ class CapaMixin(ScorableXBlockMixin, CapaFields):
                 raise Exception(msg), None, sys.exc_info()[2]
 
             self.set_state_from_lcp()
-
-        self.set_score(self.score_from_lcp())
 
         assert self.seed is not None
 
