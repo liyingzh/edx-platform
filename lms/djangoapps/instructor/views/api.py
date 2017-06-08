@@ -2151,10 +2151,11 @@ def rescore_problem(request, course_id):
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @require_level('instructor')
-@require_post_params(problem_to_reset="problem urlname to reset")
+@require_post_params(problem_to_reset="problem urlname to reset", score='overriding score')
 @common_exceptions_400
 def override_problem_score(request, course_id):
     course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    score = strip_if_string(request.POST.get('score'))
     problem_to_reset = strip_if_string(request.POST.get('problem_to_reset'))
     student_identifier = request.POST.get('unique_student_identifier', None)
 
@@ -2178,7 +2179,7 @@ def override_problem_score(request, course_id):
             request,
             module_state_key,
             student,
-            '0',
+            score,
         )
     except NotImplementedError as exc:
         return HttpResponseBadRequest(exc.message)

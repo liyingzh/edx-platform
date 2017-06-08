@@ -256,11 +256,12 @@ def override_problem_score_module_state(xmodule_instance_args, module_descriptor
             TASK_LOG.warning(msg)
             return UPDATE_STATUS_FAILED
 
-        if not isinstance(instance, ScorableXBlockMixin):
+        if not hasattr(instance, 'set_score'):
             msg = "Score override is only valid for scorable components."
             raise UpdateProblemModuleStateError(msg)
 
-        if task_input['weighted_score'] < 0 or task_input['weighted_score'] > instance.max_score():
+        weighted_override_score = int(task_input['score'])
+        if weighted_override_score < 0 or weighted_override_score > instance.max_score():
             msg = "Score must be between 0 and the max points available for the problem."
             raise UpdateProblemModuleStateError(msg)
 
@@ -271,9 +272,10 @@ def override_problem_score_module_state(xmodule_instance_args, module_descriptor
         set_event_transaction_type(GRADES_OVERRIDE_EVENT_TYPE)
 
         # specific events from CAPA are not propagated up the stack. Do we want this?
+        problem_weight = instance.weight if instance.weight is not None else 1
         instance.set_score(Score(
-            raw_earned=task_input['weighted_score'] / instance.max_score(),
-            raw_possible=instance.max_score() / instance.weight
+            raw_earned=weighted_override_score / problem_weight,
+            raw_possible=instance.max_score() / problem_weight
         ))
         instance.publish_grade()
         instance.save()

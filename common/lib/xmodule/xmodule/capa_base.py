@@ -219,6 +219,11 @@ class CapaFields(object):
                "or to report an issue, please contact moocsupport@mathworks.com"),
         scope=Scope.settings
     )
+    score = Integer(
+        display_name=_("Score"),
+        scope=Scope.user_state,
+        help=_("The student's current raw score on the problem"),
+    )
 
 
 class CapaMixin(ScorableXBlockMixin, CapaFields):
