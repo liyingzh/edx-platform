@@ -28,7 +28,7 @@ from xblock.scorable import ScorableXBlockMixin, Score
 from xmodule.capa_base_constants import RANDOMIZATION, SHOWANSWER
 from xmodule.exceptions import NotFoundError
 from xmodule.graders import ShowCorrectness
-from .fields import Date, Timedelta
+from .fields import Date, Timedelta, ScoreField
 from .progress import Progress
 
 from openedx.core.djangolib.markup import HTML, Text
@@ -104,7 +104,8 @@ class CapaFields(object):
     attempts = Integer(
         help=_("Number of attempts taken by the student on this problem"),
         default=0,
-        scope=Scope.user_state)
+        scope=Scope.user_state
+    )
     max_attempts = Integer(
         display_name=_("Maximum Attempts"),
         help=_("Defines the number of times a student can try to answer this problem. "
@@ -183,6 +184,7 @@ class CapaFields(object):
                        scope=Scope.user_state, default={})
     input_state = Dict(help=_("Dictionary for maintaining the state of inputtypes"), scope=Scope.user_state)
     student_answers = Dict(help=_("Dictionary with the current student responses"), scope=Scope.user_state)
+    score = ScoreField(help=_("Dictionary with the current student score"), scope=Scope.user_state, enforce_type=False)
     has_saved_answers = Boolean(help=_("Whether or not the answers have been saved since last submit"),
                                 scope=Scope.user_state)
     done = Boolean(help=_("Whether the student has answered the problem"), scope=Scope.user_state)
@@ -219,10 +221,6 @@ class CapaFields(object):
                "or to report an issue, please contact moocsupport@mathworks.com"),
         scope=Scope.settings
     )
-    score = Dict(
-        scope=Scope.user_state,
-        help=_("The student's current raw score on the problem"),
-    )
 
 
 class CapaMixin(ScorableXBlockMixin, CapaFields):
@@ -246,9 +244,6 @@ class CapaMixin(ScorableXBlockMixin, CapaFields):
         # it to the system here seems like the least clunky way to get it
         # there.
         self.runtime.set('location', self.location.to_deprecated_string())
-        # DEBUG: THIS WORKS. RUN: IT DOESN'T. RACE CONDITION?
-        if self.score:
-            self.set_score(Score(raw_earned=self.score['raw_earned'], raw_possible=self.score['raw_possible']))
 
         try:
             # TODO (vshnayder): move as much as possible of this work and error
@@ -385,9 +380,8 @@ class CapaMixin(ScorableXBlockMixin, CapaFields):
         """
         For now, just return weighted earned / weighted possible
         """
-        score = self.get_score()
-        raw_earned = score.raw_earned
-        raw_possible = score.raw_possible
+        raw_earned = self.score.raw_earned
+        raw_possible = self.score.raw_possible
 
         if raw_possible > 0:
             if self.weight is not None:
