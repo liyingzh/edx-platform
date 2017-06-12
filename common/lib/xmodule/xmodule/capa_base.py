@@ -294,6 +294,9 @@ class CapaMixin(ScorableXBlockMixin, CapaFields):
 
             self.set_state_from_lcp()
 
+        if self.score is None:
+            self.set_score(self.score_from_lcp())
+
         assert self.seed is not None
 
     def choose_new_seed(self):
