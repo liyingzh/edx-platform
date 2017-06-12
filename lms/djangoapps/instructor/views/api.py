@@ -2146,6 +2146,7 @@ def rescore_problem(request, course_id):
     response_payload['task'] = 'created'
     return JsonResponse(response_payload)
 
+
 @transaction.non_atomic_requests
 @require_POST
 @ensure_csrf_cookie
@@ -2186,6 +2187,7 @@ def override_problem_score(request, course_id):
 
     response_payload['task'] = 'created'
     return JsonResponse(response_payload)
+
 
 @transaction.non_atomic_requests
 @require_POST

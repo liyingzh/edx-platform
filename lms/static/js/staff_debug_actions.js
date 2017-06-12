@@ -18,7 +18,7 @@ var StaffDebug = (function() {
         }
         return uname;
     };
-    
+
     var getScore = function(locationName) {
         var sanitizedLocationName = sanitizeString(locationName);
         var score = $('#sd_fs_' + sanitizedLocationName).val();
