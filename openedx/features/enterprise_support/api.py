@@ -18,7 +18,7 @@ from edx_rest_api_client.client import EdxRestApiClient
 from requests.exceptions import ConnectionError, Timeout
 from slumber.exceptions import HttpClientError, HttpServerError, SlumberBaseException
 
-from openedx.core.djangoapps.api_admin.utils import course_discovery_api_client
+from openedx.core.djangoapps.catalog.utils import create_catalog_api_client
 from openedx.core.djangoapps.catalog.models import CatalogIntegration
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.lib.token_utils import JwtBuilder
@@ -463,7 +463,7 @@ def is_course_in_enterprise_catalog(site, course_id, enterprise_catalog_id):
 
         try:
             # GET: /api/v1/catalogs/{catalog_id}/contains?course_run_id={course_run_ids}
-            response = course_discovery_api_client(user=user).catalogs(enterprise_catalog_id).contains.get(
+            response = create_catalog_api_client(user=user).catalogs(enterprise_catalog_id).contains.get(
                 course_run_id=course_id
             )
             cache.set(cache_key, response, settings.COURSES_API_CACHE_TIMEOUT)

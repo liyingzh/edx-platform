@@ -6,11 +6,12 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from edx_rest_api_client.client import EdxRestApiClient
-
+from openedx.core.djangoapps.theming.helpers import get_current_site
 from openedx.core.djangoapps.catalog.cache import PROGRAM_CACHE_KEY_TPL, PROGRAM_UUIDS_CACHE_KEY
 from openedx.core.djangoapps.catalog.models import CatalogIntegration
 from openedx.core.lib.edx_api_utils import get_edx_api_data
 from openedx.core.lib.token_utils import JwtBuilder
+import waffle
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,15 @@ def get_programs(uuid=None):
             logger.warning(missing_details_msg_tpl.format(uuid=uuid))
 
         return program
-
-    uuids = cache.get(PROGRAM_UUIDS_CACHE_KEY, [])
+    if waffle.switch_is_active("get-multitenant-programs"):
+        logger.info('Fetching programs from cache for site {site_name}, key = {cache_key}'.format(
+            site_name=get_current_site().name,
+            cache_key=PROGRAM_UUIDS_CACHE_KEY.format(site_name=get_current_site().name)
+        ))
+        uuids = cache.get(PROGRAM_UUIDS_CACHE_KEY.format(site_name=get_current_site().name), [])
+        logger.info(uuids)
+    else:
+        uuids = cache.get(PROGRAM_UUIDS_CACHE_KEY, [])
     if not uuids:
         logger.warning('Failed to get program UUIDs from the cache.')
 
@@ -109,7 +117,7 @@ def get_program_types(name=None):
         return []
 
 
-def get_programs_with_type(types=None, include_hidden=True):
+def get_programs_with_type(include_hidden=True):
     """
     Return the list of programs. You can filter the types of programs returned using the optional
     types parameter. If no filter is provided, all programs of all types will be returned. In addition,
@@ -130,13 +138,6 @@ def get_programs_with_type(types=None, include_hidden=True):
     if programs:
         program_types = {program_type['name']: program_type for program_type in get_program_types()}
         for program in programs:
-            # This limited type filtering is sufficient for current needs and
-            # helps us avoid additional complexity when caching program data.
-            # However, if the need for additional filtering of programs should
-            # arise, consider using the cache_programs management command to
-            # cache the filtered lists of UUIDs.
-            if types and program['type'] not in types:
-                continue
 
             if program['hidden'] and not include_hidden:
                 continue
