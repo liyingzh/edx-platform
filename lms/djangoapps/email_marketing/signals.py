@@ -11,10 +11,12 @@ from sailthru.sailthru_client import SailthruClient
 from sailthru.sailthru_error import SailthruClientError
 
 from email_marketing.models import EmailMarketingConfiguration
-from lms.djangoapps.email_marketing.tasks import update_user, update_user_email
+from lms.djangoapps.email_marketing.tasks import update_user, update_user_email, get_email_cookies_via_sailthru
 from student.cookies import CREATE_LOGON_COOKIE
 from student.views import REGISTER_USER
 from util.model_utils import USER_FIELD_CHANGED
+
+from celery.exceptions import TimeoutError
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +24,8 @@ log = logging.getLogger(__name__)
 CHANGED_FIELDNAMES = ['username', 'is_active', 'name', 'gender', 'education',
                       'age', 'level_of_education', 'year_of_birth',
                       'country']
+# timeout value in seconds for sailthru api calls
+SAILTHRU_TIMEOUT = 3
 
 
 @receiver(CREATE_LOGON_COOKIE)
@@ -54,18 +58,15 @@ def add_email_marketing_cookies(sender, response=None, user=None,
         if sailthru_content:
             post_parms['cookies'] = {'anonymous_interest': sailthru_content}
 
+    time_before_call = datetime.datetime.now()
+    sailthru_response = get_email_cookies_via_sailthru.delay(post_parms)
+
     try:
-        sailthru_client = SailthruClient(email_config.sailthru_key, email_config.sailthru_secret)
-        log.info(
-            'Sending to Sailthru the user interest cookie [%s] for user [%s]',
-            post_parms.get('cookies', ''),
-            user.email
-        )
-        time_before_call = datetime.datetime.now()
+        sailthru_response.get(timeout=SAILTHRU_TIMEOUT, propagate=True)
+        sailthru_response = sailthru_response.result
 
-        sailthru_response = \
-            sailthru_client.api_post("user", post_parms)
-
+    except TimeoutError as exc:
+        log.error("Timeout error while attempting to obtain cookie from Sailthru: %s", unicode(exc))
     except SailthruClientError as exc:
         log.error("Exception attempting to obtain cookie from Sailthru: %s", unicode(exc))
 

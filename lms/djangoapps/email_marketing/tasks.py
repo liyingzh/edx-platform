@@ -17,6 +17,27 @@ log = logging.getLogger(__name__)
 SAILTHRU_LIST_CACHE_KEY = "email.marketing.cache"
 
 
+@task(bind=True)
+def get_email_cookies_via_sailthru(self, post_parms):
+    """
+    Adds/updates Sailthru cookie information for a new user.
+     Args:
+        post_parms(dict): User profile information to pass as 'vars' to Sailthru
+    Returns:
+        sailthru_response(dict): cookie fetched from Sailthru
+    """
+    sailthru_client = SailthruClient(email_config.sailthru_key, email_config.sailthru_secret)
+    log.info(
+        'Sending to Sailthru the user interest cookie [%s] for user [%s]',
+        post_parms.get('cookies', ''),
+        user.email
+    )
+
+    sailthru_response = sailthru_client.api_post("user", post_parms)
+
+    return sailthru_response
+
+
 # pylint: disable=not-callable
 @task(bind=True, default_retry_delay=3600, max_retries=24)
 def update_user(self, sailthru_vars, email, site=None, new_user=False, activation=False):

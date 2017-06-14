@@ -98,13 +98,10 @@ class EmailMarketingTests(TestCase):
         self.request.COOKIES['anonymous_interest'] = 'cookie_content'
         mock_get_current_request.return_value = self.request
         mock_sailthru.return_value = SailthruResponse(JsonResponse({'keys': {'cookie': 'test_cookie'}}))
-        cookie_log = "Sending to Sailthru the user interest cookie [{'anonymous_interest': 'cookie_content'}]" \
-                     ' for user [test@edx.org]'
 
         with LogCapture(LOGGER_NAME, level=logging.INFO) as logger:
             add_email_marketing_cookies(None, response=response, user=self.user)
             logger.check(
-                (LOGGER_NAME, 'INFO', cookie_log),
                 (LOGGER_NAME, 'INFO',
                     'Started at {start} and ended at {end}, time spent:{delta} milliseconds'.format(
                         start=datetime.datetime.now().isoformat(' '),
