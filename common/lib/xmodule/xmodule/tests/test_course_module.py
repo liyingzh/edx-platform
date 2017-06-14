@@ -359,7 +359,7 @@ class CourseDescriptorTestCase(unittest.TestCase):
         Initialize dummy testing course.
         """
         super(CourseDescriptorTestCase, self).setUp()
-        self.course = get_dummy_course(start=_TODAY)
+        self.course = get_dummy_course(start=_TODAY, end=_NEXT_WEEK)
 
     def test_clean_id(self):
         """
@@ -394,5 +394,5 @@ class CourseDescriptorTestCase(unittest.TestCase):
         The certificate_available_date field should default to two days
         after the course end date.
         """
-        expected_certificate_available_date = self.end + timedelta(days=2)
-        self.assertEqual(expected_certificate_available_date, self.certificate_available_date)
+        expected_certificate_available_date = self.course.end + timedelta(days=2)
+        self.assertEqual(expected_certificate_available_date, self.course.certificate_available_date)

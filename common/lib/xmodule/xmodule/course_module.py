@@ -4,7 +4,7 @@ Django module container for classes and operations related to the "Course Module
 import json
 import logging
 from cStringIO import StringIO
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from lazy import lazy
@@ -947,7 +947,7 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         self.grade_cutoffs = grading_policy['GRADE_CUTOFFS']
 
     def set_default_certificate_available_date(self):
-        if not self.certificate_available_date:
+        if (not self.certificate_available_date) and self.end:
             self.certificate_available_date = self.end + timedelta(days=2)
 
     @classmethod
