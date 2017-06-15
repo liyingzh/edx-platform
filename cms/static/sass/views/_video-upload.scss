@@ -171,37 +171,46 @@
 
   .video-table {
     display: table;
-    width: auto;
-    border: 1px solid #666666;
-  }
+    .video-row {
+      display: table-row;
+      width: auto;
+      clear: both;
 
-  .video-row {
-    display: table-row;
-    width: auto;
-    clear: both;
-  }
+      .video-col {
+        float: left; /* fix for  buggy browsers */
+        display: table-column;
+      }
 
-  .video-col {
-    float: left; /* fix for  buggy browsers */
-    display: table-column;
-    width: flex-grid(2, 12);
-  }
+      .thumbnail-col {
+        width: 20%;
+      }
 
-  .gray-l6 {
-    background: $gray-l6 !important;
-  }
+      .name-col {
+        width: 25%;
+      }
 
-  .white {
-    background: white !important;
-  }
+      .date-col {
+        width: 10%;
+      }
 
-  .blue-l5 {
-    background: $blue-l5 !important;
+      .video-id-col {
+        width: 15%;
+      }
+
+      .status-col {
+        width: 10%;
+      }
+
+      .actions-col {
+        width: 5%;
+      }
+
+
+    }
   }
 
   .thumbnail-error-wrapper {
-    padding: 0 !important;
-    border: none !important;
+    margin: 10px 0 0 10px;
 
     .thumbnail-error-text {
       color: $red;
@@ -209,10 +218,6 @@
         margin-left: 5px;
       }
     }
-  }
-
-  tr.has-thumbnail-error {
-    border: none !important;
   }
 
   $thumbnail-width: ($baseline*7.5);

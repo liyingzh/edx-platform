@@ -36,7 +36,7 @@
       font-size: 80%;
       word-wrap: break-word;
 
-      th, .video-th {
+      th, .video-head-col {
         @extend %t-copy-sub2;
         background-color: $gray-l5;
         padding: 0 ($baseline/2) ($baseline*0.75) ($baseline/2);

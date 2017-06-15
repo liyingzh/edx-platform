@@ -62,11 +62,6 @@ define(
                                     type: 'DELETE'
                                 }).done(function() {
                                     videoView.remove();
-                                    // TODO: Remove this when cleaning up - EDUCATOR-562
-                                    $thumbnailEl = $('.thumbnail-error-wrapper[data-video-id="' + videoId + '"]');
-                                    if ($thumbnailEl.length) {
-                                        $thumbnailEl.remove();
-                                    }
                                 });
                             }
                         );
