@@ -139,7 +139,8 @@ define([
                         problem_to_reset: location,
                         unique_student_identifier: 'userman',
                         delete_module: undefined,
-                        only_if_higher: false
+                        only_if_higher: false,
+                        score: undefined
                     });
                     expect($.ajax.calls.mostRecent().args[0].url).toEqual(
                         '/instructor/api/rescore_problem'
