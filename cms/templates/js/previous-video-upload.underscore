@@ -1,9 +1,9 @@
-<td class="thumbnail-col"></td>
-<td class="name-col"><%- client_video_id %></td>
-<td class="date-col"><%- created %></td>
-<td class="video-id-col"><%- edx_video_id %></td>
-<td class="status-col"><%- status %></td>
-<td class="actions-col">
+<div class="video-col thumbnail-col"></div>
+<div class="video-col name-col"><%- client_video_id %></div>
+<div class="video-col date-col"><%- created %></div>
+<div class="video-col video-id-col"><%- edx_video_id %></div>
+<div class="video-col status-col"><%- status %></div>
+<div class="video-col actions-col">
     <ul class="actions-list">
         <li class="action-item action-remove">
             <a href="#" data-tooltip="<%- gettext('Remove this video') %>" class="remove-video-button action-button">
@@ -12,4 +12,4 @@
             </a>
         </li>
     </ul>
-</td>
+</div>

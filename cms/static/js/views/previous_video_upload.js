@@ -8,7 +8,9 @@ define(
         'use strict';
 
         var PreviousVideoUploadView = BaseView.extend({
-            tagName: 'tr',
+            tagName: 'div',
+
+            className: 'video-row',
 
             events: {
                 'click .remove-video-button.action-button': 'removeVideo'

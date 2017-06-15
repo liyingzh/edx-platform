@@ -169,6 +169,24 @@
     }
   }
 
+  .video-table {
+    display: table;
+    width: auto;
+    border: 1px solid #666666;
+  }
+
+  .video-row {
+    display: table-row;
+    width: auto;
+    clear: both;
+  }
+
+  .video-col {
+    float: left; /* fix for  buggy browsers */
+    display: table-column;
+    width: flex-grid(2, 12);
+  }
+
   .gray-l6 {
     background: $gray-l6 !important;
   }
