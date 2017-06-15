@@ -152,22 +152,22 @@ def track_voted_event(request, course, obj, vote_value, undo_vote=False):
     track_forum_event(request, event_name, course, obj, event_data)
 
 
-def track_viewed_event(request, course, obj, view_method):
+def track_thread_viewed_event(request, course, thread, view_method):
     """
     Send analytics event for a viewed thread.
     """
     event_name = _EVENT_NAME_TEMPLATE.format(obj_type='thread', action_name='viewed')
     truncated_title = (
-        obj.title if len(obj.title) <= TRACKING_MAX_FORUM_TITLE
-        else obj.title[:(TRACKING_MAX_FORUM_TITLE - 3)] + '...'
+        thread.title if len(thread.title) <= TRACKING_MAX_FORUM_TITLE
+        else thread.title[:(TRACKING_MAX_FORUM_TITLE - 3)] + '...'
     )
     event_data = {
         'title': truncated_title,
         'team': None, # @@TODO What should go here?
-        'target_username': obj.username,
+        'target_username': thread.username,
         'view_method': view_method,
     }
-    track_forum_event(request, event_name, course, obj, event_data)
+    track_forum_event(request, event_name, course, thread, event_data)
 
 
 def permitted(func):
