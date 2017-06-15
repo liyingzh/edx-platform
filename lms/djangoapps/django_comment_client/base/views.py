@@ -152,7 +152,7 @@ def track_voted_event(request, course, obj, vote_value, undo_vote=False):
     track_forum_event(request, event_name, course, obj, event_data)
 
 
-def track_thread_viewed_event(request, course, thread, view_method):
+def track_thread_viewed_event(request, course, thread, view_method='unspecified'):
     """
     Send analytics event for a viewed thread.
     """
@@ -162,6 +162,7 @@ def track_thread_viewed_event(request, course, thread, view_method):
         else thread.title[:(TRACKING_MAX_FORUM_TITLE - 3)] + '...'
     )
     event_data = {
+        'commentable_id': thread.commentable_id,
         'title': truncated_title,
         'team': None, # @@TODO What should go here?
         'target_username': thread.username,

@@ -51,6 +51,7 @@ from django_comment_client.utils import (
     is_commentable_divided,
     get_group_id_for_user,
 )
+from django_comment_client.base.views import track_thread_viewed_event
 
 import django_comment_client.utils as utils
 import lms.lib.comment_client as cc
@@ -291,6 +292,7 @@ def single_thread(request, course_key, discussion_id, thread_id):
         user_info = cc_user.to_dict()
         is_staff = has_permission(request.user, 'openclose_thread', course.id)
 
+        print '>>>>>>>>>>>>>ajax'
         thread = _find_thread(request, course, discussion_id=discussion_id, thread_id=thread_id)
         if not thread:
             raise Http404
@@ -307,11 +309,13 @@ def single_thread(request, course_key, discussion_id, thread_id):
         with newrelic_function_trace("add_courseware_context"):
             add_courseware_context([content], course, request.user)
 
+        track_thread_viewed_event(request, course, thread)
         return utils.JsonResponse({
             'content': content,
             'annotated_content_info': annotated_content_info,
         })
     else:
+        print '>>>>>>>>>>>>non-ajax'
         course_id = unicode(course.id)
         tab_view = CourseTabView()
         return tab_view.get(request, course_id, 'discussion', discussion_id=discussion_id, thread_id=thread_id)
@@ -425,6 +429,8 @@ def _create_discussion_board_context(request, course_key, discussion_id=None, th
 
     with newrelic_function_trace("get_cohort_info"):
         user_group_id = get_group_id_for_user(user, course_key)
+
+    track_thread_viewed_event(request, course, thread)
 
     context.update({
         'root_url': root_url,
