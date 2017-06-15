@@ -34,7 +34,7 @@ var StaffDebug = (function() {
             unique_student_identifier: getUser(action.locationName),
             delete_module: action.delete_module,
             only_if_higher: action.only_if_higher,
-            score: getScore(action.locationName)
+            score: action.score
         };
         $.ajax({
             type: 'POST',
@@ -122,7 +122,7 @@ var StaffDebug = (function() {
             method: 'override_problem_score',
             success_msg: gettext('Successfully overrode problem score for user {user}'),
             error_msg: gettext('Failed to override problem score to improve score for user.'),
-            override_score: true
+            score: getScore(locname)
         });
     };
 
