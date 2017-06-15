@@ -96,7 +96,8 @@ define([
                         problem_to_reset: location,
                         unique_student_identifier: 'userman',
                         delete_module: false,
-                        only_if_higher: undefined
+                        only_if_higher: undefined,
+                        score: undefined
                     });
                     expect($.ajax.calls.mostRecent().args[0].url).toEqual(
                         '/instructor/api/reset_student_attempts'
@@ -116,7 +117,8 @@ define([
                         problem_to_reset: location,
                         unique_student_identifier: 'userman',
                         delete_module: true,
-                        only_if_higher: undefined
+                        only_if_higher: undefined,
+                        score: undefined
                     });
                     expect($.ajax.calls.mostRecent().args[0].url).toEqual(
                         '/instructor/api/reset_student_attempts'
@@ -157,10 +159,32 @@ define([
                         problem_to_reset: location,
                         unique_student_identifier: 'userman',
                         delete_module: undefined,
-                        only_if_higher: true
+                        only_if_higher: true,
+                        score: undefined
                     });
                     expect($.ajax.calls.mostRecent().args[0].url).toEqual(
                         '/instructor/api/rescore_problem'
+                    );
+                    $('#' + fixtureID).remove();
+                });
+            });
+            describe('overrideScore', function() {
+                it('makes an ajax call with the expected parameters', function() {
+                    $('body').append($fixture);
+
+                    spyOn($, 'ajax');
+                    StaffDebug.overrideScore(locationName, location);
+
+                    expect($.ajax.calls.mostRecent().args[0].type).toEqual('POST');
+                    expect($.ajax.calls.mostRecent().args[0].data).toEqual({
+                        problem_to_reset: location,
+                        unique_student_identifier: 'userman',
+                        delete_module: undefined,
+                        only_if_higher: true,
+                        score: 0
+                    });
+                    expect($.ajax.calls.mostRecent().args[0].url).toEqual(
+                        '/instructor/api/override_problem_score'
                     );
                     $('#' + fixtureID).remove();
                 });

@@ -261,7 +261,7 @@ class ScoreField(JSONField):
             return value
         if isinstance(value, Score):
             return value
-        
+
         keys = value.keys()
         if 'raw_earned' not in keys or 'raw_possible' not in keys:
             raise TypeError('Scores must contain only a raw earned and raw possible value')
