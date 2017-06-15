@@ -200,7 +200,7 @@ define([
                         unique_student_identifier: 'userman',
                         delete_module: undefined,
                         only_if_higher: undefined,
-                        score: 1
+                        score: '1'
                     });
                     expect($.ajax.calls.mostRecent().args[0].url).toEqual(
                         '/instructor/api/override_problem_score'
