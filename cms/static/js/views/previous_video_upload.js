@@ -43,10 +43,7 @@ define(
             },
 
             removeVideo: function(event) {
-                var $thumbnailEl,
-                    videoView = this,
-                    videoId = videoView.model.get('edx_video_id');
-
+                var videoView = this;
                 event.preventDefault();
 
                 ViewUtils.confirmThenRunOperation(
