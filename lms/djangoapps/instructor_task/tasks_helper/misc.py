@@ -10,8 +10,8 @@ from time import time
 
 import unicodecsv
 from django.contrib.auth.models import User
-from django.core.files.storage import DefaultStorage
 from django.core.exceptions import ValidationError
+from django.core.files.storage import DefaultStorage
 from openassessment.data import OraAggregateData
 from pytz import UTC
 
@@ -176,7 +176,7 @@ def cohort_students_and_upload(_xmodule_instance_args, _entry_id, course_id, tas
                 (user, previous_cohort, prereg) = add_user_to_cohort(cohorts_status[cohort_name]['cohort'], username_or_email)
                 if prereg:
                     cohorts_status[cohort_name]['Preassigned Users'].add(username_or_email)
-                    task_progress.Preassigned += 1
+                    task_progress.preassigned += 1
                 else:
                     cohorts_status[cohort_name]['Learners Added'] += 1
                     task_progress.succeeded += 1

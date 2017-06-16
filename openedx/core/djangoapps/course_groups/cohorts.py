@@ -245,18 +245,21 @@ def get_cohort(user, course_key, assign=True, use_cached=False):
     try:
         with transaction.atomic():
             # If learner has been pre-registered in a cohort, get that cohort. Otherwise assign to a random cohort.
-            user = UnregisteredLearnerCohortAssignments.objects.filter(email=user.email, course_id=course_key)
+            course_user_group = None
+            for assignment in UnregisteredLearnerCohortAssignments.objects.filter(email=user.email, course_id=course_key):
+                course_user_group = assignment.course_user_group
+                unregistered_learner = assignment
 
-            if user:
-                course_user_group = user.course_user_group
-                user.delete()
+            if course_user_group:
+                unregistered_learner.delete()
             else:
                 course_user_group = get_random_cohort(course_key)
 
             membership = CohortMembership.objects.create(
                 user=user,
-                course_user_group=course_user_group
+                course_user_group=course_user_group,
             )
+
             return cache.setdefault(cache_key, membership.course_user_group)
     except IntegrityError as integrity_error:
         # An IntegrityError is raised when multiple workers attempt to

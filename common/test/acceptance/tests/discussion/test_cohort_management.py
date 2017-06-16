@@ -226,7 +226,7 @@ class CohortConfigurationTest(EventsTestMixin, UniqueCourseTest, CohortTestMixin
         self.assertEqual(
             [
                 "There was an error when trying to add learners:",
-                "Unknown user: unknown_user"
+                "Unknown username: unknown_user"
             ],
             self.cohort_management_page.get_cohort_error_messages()
         )
