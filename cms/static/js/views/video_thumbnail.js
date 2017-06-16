@@ -255,6 +255,7 @@ define(
                 } else if (this.action === 'edit') {
                     this.setActionInfo(this.action, false);
                 }
+                this.$('.thumbnail-wrapper').removeClass('focused');
             },
 
             setActionInfo: function(action, showText, additionalSRText) {
@@ -330,7 +331,7 @@ define(
                 this.readMessages([gettext('Could not upload the video image file'), errorText]);
 
                 // Add error wrapper html to current video element row.
-                $parentRowEl.prepend(    // safe-lint: disable=javascript-jquery-insertion
+                $parentRowEl.before(    // safe-lint: disable=javascript-jquery-insertion
                    HtmlUtils.ensureHtml(
                        this.thumbnailErrorTemplate({videoId: videoId, errorText: errorText})
                    ).toString()
