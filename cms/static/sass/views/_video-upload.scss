@@ -208,10 +208,12 @@
   }
 
   .thumbnail-error-wrapper {
-    margin: 10px 0 0 10px;
+    display: table-row;
+    white-space: nowrap;
 
     .thumbnail-error-text {
       color: $red;
+      padding: 10px 15px 0;
       .action-text {
         margin-left: 5px;
       }
