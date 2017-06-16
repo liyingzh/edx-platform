@@ -17,7 +17,7 @@ class CatalogIntegration(ConfigurationModel):
     internal_api_url = models.URLField(
         verbose_name=_('Internal API URL'),
         help_text=_(
-            'API root to be used for server-to-server requests (e.g., https://catalog-internal.example.com/api/v1/).'
+            'DEPRECATED: Use the setting COURSE_CATALOG_API_URL.'
         )
     )
 
