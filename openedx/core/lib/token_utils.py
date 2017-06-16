@@ -94,13 +94,37 @@ class JwtBuilder(object):
         except UserProfile.DoesNotExist:
             name = None
 
+        try:
+            language = UserProfile.objects.get(user=self.user).language
+        except UserProfile.DoesNotExist:
+            language = None
+
+
+
         payload.update({
             'name': name,
+            'language_code': "enenen",
             'family_name': self.user.last_name,
             'given_name': self.user.first_name,
             'administrator': self.user.is_staff,
         })
-
+        # import pdb
+        # pdb.set_trace()
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
+        print(language)
     def encode(self, payload):
         """Encode the provided payload."""
         keys = KEYS()
